@@ -1,0 +1,43 @@
+import yt_dlp
+import os
+
+def download_audio_from_youtube(url, destination='.'):
+    try:
+        # Set up yt-dlp options for audio extraction
+        ydl_opts = {
+            'format': 'bestaudio/best',  # Select the best audio quality
+            'postprocessors': [{
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'mp3',
+                'preferredquality': '192',  # You can change this to your preferred bitrate
+            }],
+            'outtmpl': os.path.join(destination, '%(title)s.%(ext)s'),  # Output filename template
+        }
+
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            result = ydl.extract_info(url, download=True)
+            filename = ydl.prepare_filename(result).rsplit('.', 1)[0] + '.mp3'
+        
+        return True, filename, result['title']
+
+    except Exception as e:
+        print("An error occurred:")
+        print(e)
+        return False, None, str(e)
+
+def main():
+    # URL input from user
+    url = input("Enter the URL of the YouTube video you want to download audio from:\n")
+
+    # Destination directory input from user
+    destination = input("Enter the destination directory to save the audio file (leave blank for current directory):\n") or '.'
+
+    success, audio_file, title = download_audio_from_youtube(url, destination)
+
+    if success:
+        print(f"{title} has been successfully downloaded as {os.path.basename(audio_file)}")
+    else:
+        print("An error occurred:", audio_file)
+
+if __name__ == "__main__":
+    main()
